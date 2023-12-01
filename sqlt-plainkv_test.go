@@ -44,7 +44,7 @@ func TestOpen(t *testing.T) {
 
 func TestOpenMime(t *testing.T) {
 
-	pkv := NewSQLtPlainKV("local.dat", false)
+	pkv := NewSQLtPlainKV("local.dat?_pragma=journal_mode(WAL)", false)
 	if err := pkv.Open(); err != nil {
 		t.Logf(`%s`, err)
 		t.Fail()
@@ -81,7 +81,7 @@ func TestOpenMime(t *testing.T) {
 
 func TestOpenListKeys(t *testing.T) {
 
-	pkv := NewSQLtPlainKV("local.dat", false)
+	pkv := NewSQLtPlainKV("local.dat?_pragma=journal_mode(WAL)", false)
 	if err := pkv.Open(); err != nil {
 		t.Logf(`%s`, err)
 		t.Fail()
@@ -176,7 +176,7 @@ func TestDecrement(t *testing.T) {
 
 func BenchmarkPerformance(b *testing.B) {
 
-	pkv := NewSQLtPlainKV("local.dat", false)
+	pkv := NewSQLtPlainKV("local.dat?_pragma=journal_mode(WAL)", false)
 	if err := pkv.Open(); err != nil {
 		b.Logf(`%s`, err)
 		b.Fail()

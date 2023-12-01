@@ -28,6 +28,12 @@ const (
 	tallyKey  string = `_______#tally-%s`
 )
 
+var (
+	ErrBucketIdTooLong error = errors.New(`bucket id too long`)
+	ErrKeyTooLong      error = errors.New(`key too long`)
+	ErrValueTooLong    error = errors.New(`value too large`)
+)
+
 // NewSQLtPlainKV creates a new SQLtPlainKV object
 // This is the recommended method
 func NewSQLtPlainKV(dsn string, autoClose bool) *SQLtPlainKV {
@@ -85,13 +91,13 @@ func (p *SQLtPlainKV) set(bucket, key string, value []byte) error {
 		defer p.Close()
 	}
 	if len(bucket) > 50 {
-		return errors.New(`bucket id too long`)
+		return ErrBucketIdTooLong
 	}
 	if len(key) > 300 {
-		return errors.New(`key too long`)
+		return ErrKeyTooLong
 	}
 	if len(value) > 16777215 {
-		return errors.New(`value too large`)
+		return ErrValueTooLong
 	}
 	sqlstr := `
 	INSERT INTO ` + p.defTableName + ` (Bucket, KeyID, Value) VALUES (?, ?, ?)
@@ -291,11 +297,9 @@ func (p *SQLtPlainKV) TallyReset(key string) error {
 
 // Open a connection to a MySQL database database
 func (p *SQLtPlainKV) Open() error {
-
 	if p.db != nil {
 		return nil
 	}
-
 	p.inTransaction = false
 	var err error
 	p.db, err = sql.Open("sqlite", p.DSN)
@@ -362,13 +366,13 @@ func (p *SQLtPlainKV) Close() error {
 	if p.tx != nil {
 		p.tx = nil
 	}
-	if p.db != nil {
-		if err := p.db.Close(); err != nil {
-			return err
-		}
-		p.db = nil
+	if p.db == nil {
 		return nil
 	}
+	if err := p.db.Close(); err != nil {
+		return err
+	}
+	p.db = nil
 	return nil
 }
 
